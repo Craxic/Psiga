@@ -1,0 +1,13 @@
+﻿<Properties StartupItem="Psiga/Psiga.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="PsigaPkgLib/StreamHelpers.cs">
+    <Files>
+      <File FileName="PsigaPkgLib/Package.cs" Line="162" Column="84" />
+      <File FileName="PsigaPkgLib/StreamHelpers.cs" Line="27" Column="19" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

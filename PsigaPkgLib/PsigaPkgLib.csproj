@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{28DF2A5C-66C2-4399-BF5C-0938B73ED0A8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>PsigaPkgLib</RootNamespace>
+    <AssemblyName>PsigaPkgLib</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReadStatus.cs" />
+    <Compile Include="StreamHelpers.cs" />
+    <Compile Include="Vector2.cs" />
+    <Compile Include="Entries\Entry.cs" />
+    <Compile Include="Entries\IncludePackageEntry.cs" />
+    <Compile Include="Entries\BinkAtlasEntry.cs" />
+    <Compile Include="Entries\AtlasEntry.cs" />
+    <Compile Include="Entries\Atlas\SubAtlas.cs" />
+    <Compile Include="Entries\EntryReadException.cs" />
+    <Compile Include="Entries\TextureEntry.cs" />
+    <Compile Include="Entries\BinkEntry.cs" />
+    <Compile Include="Entries\EntryType.cs" />
+    <Compile Include="EntryReference.cs" />
+    <Compile Include="PackageReference.cs" />
+    <Compile Include="PackageManager.cs" />
+    <Compile Include="Package.cs" />
+    <Compile Include="PackageReadException.cs" />
+    <Compile Include="LZF.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Folder Include="Entries\" />
+    <Folder Include="Entries\Atlas\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PsigaXnbLib\PsigaXnbLib.csproj">
+      <Project>{444EEDC3-0D34-4F2E-9417-165DA4ABD82F}</Project>
+      <Name>PsigaXnbLib</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
