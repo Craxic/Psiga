@@ -60,11 +60,11 @@ namespace Psiga
 		{
 			packages = new Dictionary<string, PackageReference.Files>();
 			typeImages = new Dictionary<EntryType, Pixbuf>() {
-				{ EntryType.Atlas, new Pixbuf("../../img/atlas.png") },
-				{ EntryType.Bink, new Pixbuf("../../img/bink.png") },
-				{ EntryType.BinkAtlas, new Pixbuf("../../img/bink-atlas.png") },
-				{ EntryType.IncludePackage, new Pixbuf("../../img/include-package.png") },
-				{ EntryType.Texture, new Pixbuf("../../img/texture.png") }
+				{ EntryType.Atlas, new Pixbuf("./img/atlas.png") },
+				{ EntryType.Bink, new Pixbuf("./img/bink.png") },
+				{ EntryType.BinkAtlas, new Pixbuf("./img/bink-atlas.png") },
+				{ EntryType.IncludePackage, new Pixbuf("./img/include-package.png") },
+				{ EntryType.Texture, new Pixbuf("./img/texture.png") }
 			};
 			propertyView = new PropertyView();
 			textureWidget = new TextureWidget();

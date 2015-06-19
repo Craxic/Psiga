@@ -3,6 +3,7 @@
 /// </summary>
 using System;
 using Microsoft.Xna.Framework.Graphics;
+using System.ComponentModel;
 
 namespace PsigaXnbLib
 {
@@ -14,6 +15,9 @@ namespace PsigaXnbLib
 
 		private byte[] Data { get; set; }
 		private byte[] DecompressedData { get; set; }
+
+		[EditorBrowsableAttribute(EditorBrowsableState.Never)]
+		public bool IsDecompressed { get { return DecompressedData != null; } }
 
 		public Texture(SurfaceFormat format, int width, int height, byte[] data)
 		{

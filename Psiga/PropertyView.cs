@@ -65,6 +65,9 @@ namespace Psiga
 		}
 
 		private void AppendProperties(TreeIter iter, object viewing) {
+			if (viewing == null) {
+				return;
+			}
 			foreach (var propertyInfo in viewing.GetType().GetProperties()) {
 				if (ShouldShowProperty(propertyInfo)) {
 					var v = propertyInfo.GetValue(viewing);

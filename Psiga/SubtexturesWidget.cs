@@ -14,7 +14,7 @@ using Cairo;
 namespace Psiga
 {
 	[System.ComponentModel.ToolboxItem(true)]
-	public class SubtexturesWidget : TreeviewPaneWidget, Shape
+	public class SubtexturesWidget : TreeviewPaneWidget
 	{
 		private class TreeNode
 		{
@@ -75,14 +75,13 @@ namespace Psiga
 		public const int TEXTURE_PACKAGE_COLUMN = 2;
 		public const int SUBATLAS_COLUMN = 3;
 
-		private PannableDrawingArea drawingArea;
+		private TextureWidget drawingArea;
 
 		public SubtexturesWidget()
 		{
 			SetDividerPosition(600);
 
-			drawingArea = new PannableDrawingArea();
-			drawingArea.Shape = this;
+			drawingArea = new TextureWidget();
 			SetRightPaneChild(drawingArea);
 
 			PackageManager.OnPackageLoad += (n, p) => InvokeUpdateModel();
@@ -156,10 +155,9 @@ namespace Psiga
 			return model;
 		}
 
-		protected override void UpdateRightPane() {
-			drawingArea.QueueDraw();
-			SelectedSubAtlas = null;
-			AssociatedTex = null;
+		private void GetViewing(out TextureEntry entry, out SubAtlas atlas) {
+			atlas = null;
+			entry = null;
 			if (TreeView == null || TreeView.Selection == null) {
 				return;
 			}
@@ -170,64 +168,31 @@ namespace Psiga
 
 			TreeIter iter;
 			Model.GetIter(out iter, rows[0]);
-			SelectedSubAtlas = ((SubAtlas)Model.GetValue(iter, SUBATLAS_COLUMN));
-			if (SelectedSubAtlas == null) {
+			atlas = ((SubAtlas)Model.GetValue(iter, SUBATLAS_COLUMN));
+			if (atlas == null) {
 				return;
 			}
 
-			if (SelectedSubAtlas.Parent.IsReference) {
-				var referencedTexture = SelectedSubAtlas.Parent.ReferencedTextureName;
+			if (atlas.Parent.IsReference) {
+				var referencedTexture = atlas.Parent.ReferencedTextureName;
 				var textures = PackageManager.TextureEntries;
 				if (textures.ContainsKey(referencedTexture)) {
-					AssociatedTex = textures[referencedTexture].Dereference() as TextureEntry;
+					entry = textures[referencedTexture].Dereference() as TextureEntry;
 				} else {
-					AssociatedTex = null;
+					entry = null;
 				}
 			} else {
-				AssociatedTex = SelectedSubAtlas.Parent.IncludedTextureEntry;
+				entry = atlas.Parent.IncludedTextureEntry;
 			}
 		}
 
-		private SubAtlas SelectedSubAtlas { get; set; }
-		private TextureEntry AssociatedTex { get; set; }
-
-		public unsafe void Draw(Cairo.Context context, double scale)
-		{
-			if (SelectedSubAtlas == null || AssociatedTex == null) {
-				return;
-			}
-
-			int offsetX = SelectedSubAtlas.TopLeft.X - SelectedSubAtlas.Rect.Left;
-			int offsetY = SelectedSubAtlas.TopLeft.Y - SelectedSubAtlas.Rect.Top;
-
-			int top = SelectedSubAtlas.Rect.Top + offsetY;
-			int left = SelectedSubAtlas.Rect.Left + offsetX;
-			int right = SelectedSubAtlas.Rect.Right + offsetX;
-			int bottom = SelectedSubAtlas.Rect.Bottom + offsetY;
-
-			context.MoveTo(left, top);
-			context.LineTo(left, bottom);
-			context.LineTo(right, bottom);
-			context.LineTo(right, top);
-			context.LineWidth = 0;
-
-			{
-				context.SetSourceRGB(0,0,0);
-				context.FillPreserve();
-			}
-
-			fixed (byte * decompressedFixed = AssociatedTex.Texture.GetDecompressedARGB32PreMul())
-			{
-				var buf = new ImageSurface(
-					(IntPtr)decompressedFixed, Format.ARGB32, 
-					AssociatedTex.Texture.Width, AssociatedTex.Texture.Height, 
-					AssociatedTex.Texture.Width * 4);
-				
-				context.SetSourceSurface(buf, -SelectedSubAtlas.Rect.Left + left, -SelectedSubAtlas.Rect.Top + top);
-				context.Fill();
-				context.SetSourceRGB(1, 0, 0);
-				buf.Dispose();
-			}
+		protected override void UpdateRightPane() {
+			TextureEntry entry;
+			SubAtlas atlas;
+			GetViewing(out entry, out atlas);
+			drawingArea.Viewing = entry;
+			drawingArea.Atlas = atlas;
+			drawingArea.QueueDraw();
 		}
 	}
 }

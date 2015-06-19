@@ -11,8 +11,6 @@ namespace Psiga
 	{
 		public static void Main(string[] args)
 		{
-			PackageManager.SetTransistorRoot("/home/matthew/.steam/steam/steamapps/common/Transistor/Content/Win/Packages");
-
 			Application.Init();
 			PackageViewerWindow win = new PackageViewerWindow();
 			win.Show();

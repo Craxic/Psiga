@@ -212,6 +212,7 @@ namespace PsigaPkgLib
 					throw new PackageReadException(string.Format(ERR_PACKAGE_VERSION, packageHeader, dataFile));
 				}
 
+				LZF decompressor = new LZF();
 				// Read all chunks in the file
 				ReadStatus readStatus;
 				do {
@@ -219,7 +220,6 @@ namespace PsigaPkgLib
 					if (isCompressed && fs.ReadByte() != 0) {
 						int num2 = fs.ReadInt32BE();
 						fs.Read(compressionBuffer, 0, num2);
-						var decompressor = new LZF();
 						chunkSize = decompressor.Decompress(compressionBuffer, num2, readBuffer, readBuffer.Length);
 					} else {
 						chunkSize = fs.Read(readBuffer, 0, packageLength);

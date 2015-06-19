@@ -44,4 +44,3 @@ namespace PsigaPkgLib.Entries
 		public override string DisplayName { get { return Name; } }
 	}
 }
-
