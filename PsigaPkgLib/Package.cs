@@ -219,12 +219,8 @@ namespace PsigaPkgLib
 					if (isCompressed && fs.ReadByte() != 0) {
 						int num2 = fs.ReadInt32BE();
 						fs.Read(compressionBuffer, 0, num2);
-						var bytes = CLZF2.Decompress(compressionBuffer);
-						if (readBuffer.Length < bytes.Length) {
-							throw new PackageReadException("Not enough room in read buffer for decompressed chunk.");
-						}
-						Array.Copy(bytes, readBuffer, bytes.Length);
-						chunkSize = bytes.Length;
+						var decompressor = new LZF();
+						chunkSize = decompressor.Decompress(compressionBuffer, num2, readBuffer, readBuffer.Length);
 					} else {
 						chunkSize = fs.Read(readBuffer, 0, packageLength);
 					}
