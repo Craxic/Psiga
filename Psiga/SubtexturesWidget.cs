@@ -155,7 +155,7 @@ namespace Psiga
 			return model;
 		}
 
-		private void GetViewing(out TextureEntry entry, out SubAtlas atlas) {
+		private void GetViewing(out SubAtlas atlas, out TextureEntry entry) {
 			atlas = null;
 			entry = null;
 			if (TreeView == null || TreeView.Selection == null) {
@@ -173,14 +173,9 @@ namespace Psiga
 				return;
 			}
 
+			// Get the texture that the sub atlas references.
 			if (atlas.Parent.IsReference) {
-				var referencedTexture = atlas.Parent.ReferencedTextureName;
-				var textures = PackageManager.TextureEntries;
-				if (textures.ContainsKey(referencedTexture)) {
-					entry = textures[referencedTexture].Dereference() as TextureEntry;
-				} else {
-					entry = null;
-				}
+				entry = PackageManager.GetTextureByName(atlas.Parent.ReferencedTextureName);
 			} else {
 				entry = atlas.Parent.IncludedTextureEntry;
 			}
@@ -189,7 +184,7 @@ namespace Psiga
 		protected override void UpdateRightPane() {
 			TextureEntry entry;
 			SubAtlas atlas;
-			GetViewing(out entry, out atlas);
+			GetViewing(out atlas, out entry);
 			drawingArea.Viewing = entry;
 			drawingArea.Atlas = atlas;
 			drawingArea.QueueDraw();

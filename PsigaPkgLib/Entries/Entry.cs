@@ -3,6 +3,7 @@
 /// </summary>
 using System;
 using System.ComponentModel;
+using System.IO;
 
 namespace PsigaPkgLib.Entries
 {
@@ -14,6 +15,8 @@ namespace PsigaPkgLib.Entries
 		public abstract string DisplayName { get; }
 		[EditorBrowsableAttribute(EditorBrowsableState.Never)]
 		public PackageReference Container { get; set; }
+
+		public abstract void WriteTo(Stream s);
 	}
 }
 

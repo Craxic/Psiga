@@ -27,6 +27,12 @@ namespace PsigaPkgLib.Entries
 			};
 		}
 
+		public override void WriteTo(Stream s)
+		{
+			s.WriteByte((byte)(IsAlpha ? 1 : 0));
+			s.WriteString(BinkFileName);
+		}
+
 		public override EntryType Type { get { return EntryType.Bink; } }
 		public override string DisplayName { get { return BinkFileName; } }
 	}

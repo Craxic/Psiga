@@ -14,7 +14,7 @@ namespace PsigaPkgLib
 	/// </summary>
 	public class Package
 	{
-		private const int READ_BUFFER_MAXIMUM = 0x800000; // Size is important
+		private const int CHUNK_SIZE = 0x800000;
 		private const int COMPRESSION_FLAG = 0x40000000;
 		private const int PACKAGE_VERSION_CODE = 5;
 
@@ -100,18 +100,41 @@ namespace PsigaPkgLib
 			return entries;
 		}
 
+		public const byte BINK_ATLAS_CODE = 0xEE;
+		public const byte INCLUDE_PACKAGE_CODE = 0xCC;
+		public const byte ATLAS_CODE = 0xDE;
+		public const byte BINK_CODE = 0xBB;
+		public const byte TEXTURE_CODE = 0xAD;
+		public const byte END_CHUNK_CODE = 0xBE;
+
+		private static byte GetCodeFromType(EntryType type) {
+			switch (type) {
+			case EntryType.BinkAtlas:
+				return BINK_ATLAS_CODE;
+			case EntryType.IncludePackage:
+				return INCLUDE_PACKAGE_CODE;
+			case EntryType.Atlas:
+				return ATLAS_CODE;
+			case EntryType.Bink:
+				return BINK_CODE;
+			case EntryType.Texture:
+				return TEXTURE_CODE;
+			}
+			return END_CHUNK_CODE;
+		}
+
 		public static Entry ReadManifestEntry(MemoryStream chunk, out ReadStatus readStatus) {
 			int entryType = chunk.ReadByte();
 			readStatus = ReadStatus.OK;
 			switch (entryType)
 			{
-			case 0xDE:
+			case ATLAS_CODE:
 				return AtlasEntry.Read(chunk, true);
-			case 0xEE:
+			case BINK_ATLAS_CODE:
 				return BinkAtlasEntry.Read(chunk);
-			case 0xCC:
+			case INCLUDE_PACKAGE_CODE:
 				return IncludePackageEntry.Read(chunk);
-			case 0xBE:
+			case END_CHUNK_CODE:
 				readStatus = ReadStatus.EndOfChunk;
 				return null;
 			case (int) byte.MaxValue:
@@ -130,7 +153,7 @@ namespace PsigaPkgLib
 			// Open the file we're going to read.
 			using (var fs = File.OpenRead(manifestFile)) {
 				var contents = new List<Entry>(1024);
-				var readBuffer = new byte[READ_BUFFER_MAXIMUM];
+				var readBuffer = new byte[CHUNK_SIZE];
 
 				// Read the header of the manifest
 				int manifestHeader = fs.ReadInt32BE();
@@ -162,7 +185,150 @@ namespace PsigaPkgLib
 			}
 		}
 
-		private static void WriteManifest(List<Entry> writeTheseEntries, Stream output) {
+		private static List<byte[]> MakeEntriesIntoBytes(IList<Entry> writeTheseEntries) {
+			List<byte[]> entries = new List<byte[]>();
+
+			// Get every entry in the manifest and turn it into bytes.
+			foreach (var e in writeTheseEntries) {
+				using (var ms = new MemoryStream()) {
+					// Write the type code
+					ms.WriteByte(GetCodeFromType(e.Type));
+
+					// Write the data.
+					e.WriteTo(ms);
+
+					entries.Add(ms.ToArray());
+				}
+			}
+
+			return entries;
+		}
+
+		private static List<byte[]> MakeByteEntriesIntoChunks(List<byte[]> entries) {
+			var retn = new List<byte[]>();
+			int chunkId = 0;
+			int entryId = 0;
+			while (true) {
+				// For some reason, the first chunk is 4 bytes smaller than all the others.
+				int chunk_size = chunkId == 0 ? CHUNK_SIZE - 4 : CHUNK_SIZE;
+
+				// Current writing position in chunk
+				int chunkIndex = 0;
+				var chunk = new byte[chunk_size];
+
+				// For every entry left to add...
+				while (entryId < entries.Count) {
+					// There are still entries left that must be added.
+					if (chunk.Length - chunkIndex < entries[entryId].Length + 1) {
+						// No room for this entry, time to end the chunk.
+						if (chunk.Length == chunkIndex) {
+							throw new ApplicationException("should not occur");
+						}
+						chunk[chunkIndex] = END_CHUNK_CODE;
+						chunkIndex++;
+						break;
+					} else {
+						// Add the entry into the chunk
+						Array.Copy(entries[entryId], 0, chunk, chunkIndex, entries[entryId].Length);
+						chunkIndex += entries[entryId].Length;
+						entryId++;
+					}
+				}
+
+				// Are we done adding entries?
+				if (entryId == entries.Count) {
+					// There are no more entries! Time to end the file.
+					if (chunk.Length == chunkIndex) {
+						throw new ApplicationException("should not occur");
+					}
+
+					// Write the end of file byte.
+					chunk[chunkIndex] = (byte)byte.MaxValue;
+					chunkIndex++;
+
+					// Clip the byte array
+					var newChunk = new byte[chunkIndex];
+					Array.Copy(chunk, newChunk, chunkIndex);
+					retn.Add(newChunk);
+					chunkId++;
+					break;
+				} else {
+					// Add the chunks to the list of chunks
+					retn.Add(chunk);
+					chunkId++;
+				}
+			}
+			return retn;
+		}
+
+		private static void AssertOnChunks(List<byte[]> chunks) {
+			for (int i = 0; i < chunks.Count; i++) {
+				if (i == chunks.Count - 1) {
+					if (chunks[i].Length >= CHUNK_SIZE) {
+						throw new ApplicationException("Chunk not correct size");
+					}
+				} else if (i == 0) {
+					if (chunks[i].Length != CHUNK_SIZE - 4) {
+						throw new ApplicationException("Chunk not correct size");
+					}
+				} else {
+					if (chunks[i].Length != CHUNK_SIZE) {
+						throw new ApplicationException("Chunk not correct size");
+					}
+				}
+			}
+		}
+
+		private static byte[] MakeChunksIntoPackage(List<byte[]> chunks, bool compressed) {
+			AssertOnChunks(chunks);
+			using (MemoryStream ms = new MemoryStream(chunks.Count * CHUNK_SIZE)) {
+				int headerCode = PACKAGE_VERSION_CODE;
+				if (compressed) {
+					headerCode |= COMPRESSION_FLAG;
+				}
+				ms.WriteInt32BE(headerCode);
+
+				if (compressed) {
+					var compressionBuffer = new byte[8388608];
+					var compressor = new LZF();
+					foreach (var chunk in chunks) {
+						int compressedSize = compressor.Compress(chunk, chunk.Length, compressionBuffer, compressionBuffer.Length);
+						if (compressedSize != 0) {
+							ms.WriteByte(1); // Compressed.
+							ms.WriteInt32BE(compressedSize);
+							ms.Write(compressionBuffer, 0, compressedSize);
+						} else {
+							ms.WriteByte(0); // Not compressed.
+							ms.Write(chunk, 0, chunk.Length);
+						}
+					}
+				} else {
+					foreach (var chunk in chunks) {
+						ms.Write(chunk, 0, chunk.Length);
+					}
+				}
+
+				return ms.ToArray();
+			}
+		}
+
+		public static byte[] CreatePackageFile(IList<Entry> writeTheseEntries, bool compressed) {
+			var entryBytes = MakeEntriesIntoBytes(writeTheseEntries);
+			var chunks = MakeByteEntriesIntoChunks(entryBytes);
+			return MakeChunksIntoPackage(chunks, compressed);
+		}
+
+		public byte[] CreatePackageFile() {
+			return CreatePackageFile(PackageContents, true);
+		}
+
+		public byte[] CreateManifestFile() {
+			return CreatePackageFile(ManifestContents, false);
+		}
+
+		public void WritePackageFiles(string filenameBase) {
+			File.WriteAllBytes(filenameBase + ".pkg", CreatePackageFile());
+			File.WriteAllBytes(filenameBase + ".pkg_manifest", CreateManifestFile());
 		}
 
 		public static Entry ReadPackageEntry(MemoryStream chunk, out ReadStatus readStatus) {
@@ -170,17 +336,17 @@ namespace PsigaPkgLib
 			readStatus = ReadStatus.OK;
 			switch (entryType)
 			{
-			case 0xEE:
+			case BINK_ATLAS_CODE:
 				return BinkAtlasEntry.Read(chunk);
-			case 0xCC:
+			case INCLUDE_PACKAGE_CODE:
 				return IncludePackageEntry.Read(chunk);
-			case 0xDE:
+			case ATLAS_CODE:
 				return AtlasEntry.Read(chunk, false);
-			case 0xBB:
+			case BINK_CODE:
 				return BinkEntry.Read(chunk);
-			case 0xAD:
+			case TEXTURE_CODE:
 				return TextureEntry.Read(chunk);
-			case 0xBE:
+			case END_CHUNK_CODE:
 				readStatus = ReadStatus.EndOfChunk;
 				return null;
 			case (int) byte.MaxValue:
@@ -195,7 +361,7 @@ namespace PsigaPkgLib
 		private static List<Entry> LoadPackage(string dataFile) {
 			using (var fs = File.OpenRead(dataFile)) {
 				var contents = new List<Entry>(1024);
-				var readBuffer = new byte[READ_BUFFER_MAXIMUM];
+				var readBuffer = new byte[CHUNK_SIZE];
 
 				byte[] compressionBuffer = null;
 				bool isCompressed = false;
@@ -224,6 +390,9 @@ namespace PsigaPkgLib
 					} else {
 						chunkSize = fs.Read(readBuffer, 0, packageLength);
 					}
+					byte[] test = new byte[chunkSize];
+					Array.Copy(readBuffer, test, chunkSize);
+					File.WriteAllBytes("test", test);
 					packageLength = readBuffer.Length;
 					var chunk = new MemoryStream(readBuffer, 0, chunkSize, false);
 					do {

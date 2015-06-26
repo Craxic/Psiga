@@ -15,6 +15,8 @@ namespace PsigaPkgLib.Entries
 		private const int NEW_ATLAS_VERSION_MAGIC = 2142336875;
 		private const int IS_MULTI_TEXTURE_FLAG = 0x1;
 		private const int IS_MIP_FLAG = 0x2;
+		private const int REFERENCE_CODE = 0xDD;
+		private const int INLINE_TEXTURE_CODE = 0x0; // Not sure what this value is actually, Transistor doesn't specify.
 
 		private const string ERR_ATLAS_SIZE = "Atlas has negative size of {0}";
 
@@ -84,7 +86,8 @@ namespace PsigaPkgLib.Entries
 
 			// Is this a reference to the texture, or the actual thing? If we're reading a manifest, then its always a 
 			// reference.
-			bool isReference = input.ReadByte() == 0xDD || isManifest;
+			byte refByte = (byte)input.ReadByte();
+			bool isReference = refByte == REFERENCE_CODE || isManifest;
 			entry.IsReference = isReference;
 			if (isReference) {
 				// Read the name.
@@ -94,6 +97,61 @@ namespace PsigaPkgLib.Entries
 			}
 
 			return entry;
+		}
+
+		public override void WriteTo(Stream s)
+		{
+			using (MemoryStream ms = new MemoryStream()) {
+				// Use the new version format
+				ms.WriteInt32BE(NEW_ATLAS_VERSION_MAGIC);
+
+				// Write the newest version code (2)
+				ms.WriteInt32BE(2);
+
+				// Write the number of SubAtlases
+				ms.WriteInt32BE(Entries.Count);
+
+				foreach (var entry in Entries) {
+					// Write the name
+					ms.WriteString(entry.Name);
+
+					// Write the rectangle
+					ms.WriteInt32BE(entry.Rect.X);
+					ms.WriteInt32BE(entry.Rect.Y);
+					ms.WriteInt32BE(entry.Rect.Width);
+					ms.WriteInt32BE(entry.Rect.Height);
+
+					// Write the top left
+					ms.WriteInt32BE(entry.TopLeft.X);
+					ms.WriteInt32BE(entry.TopLeft.Y);
+
+					// Write the original size
+					ms.WriteInt32BE(entry.OriginalSize.X);
+					ms.WriteInt32BE(entry.OriginalSize.Y);
+
+					// Write the scale ratio
+					ms.WriteSingleBE(entry.ScaleRatio.X);
+					ms.WriteSingleBE(entry.ScaleRatio.Y);
+
+					// Write the byte for the flags
+					ms.WriteByte((byte)((entry.IsMip ? IS_MIP_FLAG : 0) | (entry.IsMultiTexture ? IS_MULTI_TEXTURE_FLAG : 0)));
+				}
+
+				ms.WriteByte((byte)(IsReference ? REFERENCE_CODE : INLINE_TEXTURE_CODE));
+
+				// Read the name.
+				if (IsReference) {
+					ms.WriteString(ReferencedTextureName);
+				} else {
+					IncludedTextureEntry.WriteTo(ms);
+				}
+
+				var bytes = ms.ToArray();
+				// The size is wrong. Calculation by SuperGiant's tooling
+				// might be wrong? Transistor ignores it regardless.
+				s.WriteInt32BE(bytes.Length - 35); 
+				s.Write(bytes, 0, bytes.Length);
+			}
 		}
 
 		public override EntryType Type { get { return EntryType.Atlas; } }

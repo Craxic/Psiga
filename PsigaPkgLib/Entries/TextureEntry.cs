@@ -40,6 +40,14 @@ namespace PsigaPkgLib.Entries
 			return entry;
 		}
 
+		public override void WriteTo(Stream s)
+		{
+			s.WriteString(Name);
+			byte[] xnb = Texture.CreateXnb();
+			s.WriteInt32BE(xnb.Length);
+			s.Write(xnb, 0, xnb.Length);
+		}
+
 		public override EntryType Type { get { return EntryType.Texture; } }
 		public override string DisplayName { get { return Name; } }
 	}

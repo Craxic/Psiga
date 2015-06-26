@@ -89,6 +89,7 @@
     <Compile Include="SubtexturesWindow.cs" />
     <Compile Include="gtk-gui\Psiga.SubtexturesWindow.cs" />
     <Compile Include="SubtexturesWidget.cs" />
+    <Compile Include="TextureCache.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

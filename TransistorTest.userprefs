@@ -1,13 +1,21 @@
 ﻿<Properties StartupItem="Psiga/Psiga.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="PsigaPkgLib/StreamHelpers.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="PsigaXnbLib/Texture.cs">
     <Files>
-      <File FileName="PsigaPkgLib/Package.cs" Line="162" Column="84" />
-      <File FileName="PsigaPkgLib/StreamHelpers.cs" Line="27" Column="19" />
+      <File FileName="Psiga/PackageViewerWindow.cs" Line="1" Column="1" />
+      <File FileName="Psiga/Program.cs" Line="1" Column="1" />
+      <File FileName="PsigaPkgLib/Entries/AtlasEntry.cs" Line="1" Column="1" />
+      <File FileName="PsigaPkgLib/Entries/TextureEntry.cs" Line="1" Column="1" />
+      <File FileName="PsigaXnbLib/Texture.cs" Line="115" Column="1" />
+      <File FileName="PsigaPkgLib/Package.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <DisabledProjects>
+    <String>TransistorTest\TransistorTest.csproj</String>
+    <String>DXT5Lib/DXT5Lib.csproj</String>
+  </DisabledProjects>
 </Properties>

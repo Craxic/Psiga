@@ -14,7 +14,10 @@ namespace PsigaXnbLib
 			SurfaceFormat pixelFormat = (SurfaceFormat)reader.ReadInt32();
 			int width = reader.ReadInt32();
 			int height = reader.ReadInt32();
-			reader.ReadInt32();
+			int levelCount = reader.ReadInt32();
+			if (levelCount != 1) {
+				throw new PsigaShimUnsupported();
+			}
 			int num = reader.ReadInt32();
 			byte[] array = new byte[num];
 			int num2 = reader.Read(array, 0, num);

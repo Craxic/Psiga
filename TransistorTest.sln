@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PsigaPkgLib", "PsigaPkgLib\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PsigaXnbLib", "PsigaXnbLib\PsigaXnbLib.csproj", "{444EEDC3-0D34-4F2E-9417-165DA4ABD82F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibSquishDxt5", "LibSquishDxt5\LibSquishDxt5.csproj", "{8FB5758C-2388-45C5-877D-708155C07CA9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -27,6 +29,10 @@ Global
 		{444EEDC3-0D34-4F2E-9417-165DA4ABD82F}.Debug|x86.Build.0 = Debug|Any CPU
 		{444EEDC3-0D34-4F2E-9417-165DA4ABD82F}.Release|x86.ActiveCfg = Release|Any CPU
 		{444EEDC3-0D34-4F2E-9417-165DA4ABD82F}.Release|x86.Build.0 = Release|Any CPU
+		{8FB5758C-2388-45C5-877D-708155C07CA9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8FB5758C-2388-45C5-877D-708155C07CA9}.Debug|x86.Build.0 = Debug|Any CPU
+		{8FB5758C-2388-45C5-877D-708155C07CA9}.Release|x86.ActiveCfg = Release|Any CPU
+		{8FB5758C-2388-45C5-877D-708155C07CA9}.Release|x86.Build.0 = Release|Any CPU
 		{BB3571E3-9ADE-4BE7-AA0F-93285CC5AAA2}.Debug|x86.ActiveCfg = Debug|x86
 		{BB3571E3-9ADE-4BE7-AA0F-93285CC5AAA2}.Debug|x86.Build.0 = Debug|x86
 		{BB3571E3-9ADE-4BE7-AA0F-93285CC5AAA2}.Release|x86.ActiveCfg = Release|x86

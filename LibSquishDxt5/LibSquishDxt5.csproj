@@ -5,10 +5,10 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{444EEDC3-0D34-4F2E-9417-165DA4ABD82F}</ProjectGuid>
+    <ProjectGuid>{8FB5758C-2388-45C5-877D-708155C07CA9}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>PsigaXnbLib</RootNamespace>
-    <AssemblyName>PsigaXnbLib</AssemblyName>
+    <RootNamespace>LibSquishDxt5</RootNamespace>
+    <AssemblyName>LibSquishDxt5</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -20,7 +20,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -29,31 +28,13 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="LzxDecoder.cs" />
-    <Compile Include="LzxDecoderStream.cs" />
-    <Compile Include="ContentLoadException.cs" />
-    <Compile Include="ContentManagerShim.cs" />
-    <Compile Include="Texture2DRipperReader.cs" />
-    <Compile Include="SurfaceFormat.cs" />
-    <Compile Include="PsigaShimUnsupported.cs" />
-    <Compile Include="Texture.cs" />
-    <Compile Include="ContentTypeReader.cs" />
-    <Compile Include="ContentReaderShim.cs" />
-    <Compile Include="ContentReaderManager.cs" />
-    <Compile Include="DxtUtil.cs" />
+    <Compile Include="LibSquish.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <ProjectReference Include="..\LibSquishDxt5\LibSquishDxt5.csproj">
-      <Project>{8FB5758C-2388-45C5-877D-708155C07CA9}</Project>
-      <Name>LibSquishDxt5</Name>
-    </ProjectReference>
-  </ItemGroup>
 </Project>

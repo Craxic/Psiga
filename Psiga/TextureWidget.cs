@@ -12,6 +12,8 @@ using Gtk;
 using System.Runtime.InteropServices;
 using PsigaPkgLib;
 using PsigaPkgLib.Entries.Atlas;
+using System.Drawing;
+using PsigaXnbLib;
 
 namespace Psiga
 {
@@ -43,6 +45,8 @@ namespace Psiga
 					propertyview.Viewing = viewing;
 					if (viewing != null) {
 						LoadTextureAsync();
+					} else {
+						pannabledrawingarea.QueueDraw();
 					}
 				}
 			}
@@ -55,60 +59,34 @@ namespace Psiga
 		public TextureWidget()
 		{
 			this.Build();
-			pannabledrawingarea1.Shape = this;
+			pannabledrawingarea.Shape = this;
 		}
 
 		public void ShowPreview() {
 			notebook1.CurrentPage = 0;
 		}
 
-		private void SearchEntry(PsigaPkgLib.Entries.Entry e) {
-			AtlasEntry ae = e as AtlasEntry;
-			if (ae != null) {
-				if (ae.IsReference && ae.ReferencedTextureName == viewing.Name) {
-					atlasEntries.Add(ae);
-				}
-			}
-		}
-
-		private void FindAtlasses() {
-			// Search for all atlasses concerning this texture.
-			atlasEntries.Clear();
-			lock (PackageManager.Lock) {
-				foreach (var lp in PackageManager.LoadedPackages) {
-					foreach (var e in lp.Value.ManifestContents) {
-						SearchEntry(e);
-					}
-					foreach (var e in lp.Value.PackageContents) {
-						SearchEntry(e);
-					}
-				}
-			}
+		private static void StartWorker(TextureEntry viewingLocal, Action<byte[], List<AtlasEntry>> cb) {
+			(new Thread(() => {
+				byte[] decompressedLocal = TextureCache.Get(viewingLocal);
+				List<AtlasEntry> atlasEntriesLocal = PackageManager.GetAtlasesByTextureName(viewingLocal.Name);
+				Gtk.Application.Invoke((s, e) => {
+					cb(decompressedLocal, atlasEntriesLocal);
+				});
+			})).Start();
 		}
 
 		private void TriggerRedraw() {
-			Gtk.Application.Invoke((s, e) => {
-				pannabledrawingarea1.QueueDraw();
-			});
+			Gtk.Application.Invoke((s, e) => pannabledrawingarea.QueueDraw());
 		}
 
 		private byte[] decompressed = null;
-
 		private void LoadTextureAsync() {
-			if (viewing != null && viewing.Texture.IsDecompressed && Atlas != null) {
-				decompressed = viewing.Texture.GetDecompressedARGB32PreMul();
-				return;
-			} else {
-				(new Thread(() => {
-					if (viewing != null) {
-						var dc = viewing.Texture.GetDecompressedARGB32PreMul();
-						decompressed = dc;
-						TriggerRedraw();
-						FindAtlasses();
-						TriggerRedraw();
-					}
-				})).Start();
-			}
+			StartWorker(viewing, (d, a) => {
+				decompressed = d;
+				atlasEntries = a;
+				pannabledrawingarea.QueueDraw();
+			});
 		}
 
 		public unsafe void Draw(Cairo.Context context, double scale)
@@ -190,6 +168,47 @@ namespace Psiga
 			}
 		}
 
+		protected void importPNG_Clicked(object sender, EventArgs e)
+		{
+			if (Atlas != null) {
+				return;
+			}
+			Gtk.Window window = null;
+			Widget toplevel = Toplevel;
+			if (toplevel.IsTopLevel)
+			{
+				window = toplevel as Gtk.Window;
+			}
+			Gtk.FileChooserDialog fileChooser =
+				new Gtk.FileChooserDialog("Save PNG",
+					window,
+					FileChooserAction.Open,
+					"Cancel", ResponseType.Cancel,
+					"Open", ResponseType.Accept);
+			var filter = new FileFilter();
+			filter.Name = "PNG Image (*.png)";
+			filter.AddPattern("*.png");
+			fileChooser.AddFilter(filter);
+			if (fileChooser.Run() == (int)ResponseType.Accept) 
+			{
+				var file = (Bitmap)Bitmap.FromFile(fileChooser.Filename);
+				var locked = file.LockBits(
+					new System.Drawing.Rectangle(0, 0, file.Width, file.Height), 
+					System.Drawing.Imaging.ImageLockMode.ReadOnly, 
+					System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+				byte[] newData = new byte[file.Width * file.Height * 4];
+				Marshal.Copy(locked.Scan0, newData, 0, newData.Length);
+				file.UnlockBits(locked);
+				Texture.BGRAtoRGBA(newData);
+				viewing.Texture.RGBAData = newData;
+				TextureCache.Flush(viewing);
+				decompressed = null;
+				LoadTextureAsync();
+			}
+
+			fileChooser.Destroy();
+		}
+
 		protected void onExportPNG(object sender, EventArgs e)
 		{
 			Gtk.Window window = null;
@@ -246,22 +265,22 @@ namespace Psiga
 
 		protected void onResetTransforms(object sender, EventArgs e)
 		{
-			pannabledrawingarea1.ResetTransforms();
+			pannabledrawingarea.ResetTransforms();
 		}
 
 		protected void showAtlasLabelsToggled(object sender, EventArgs e)
 		{
-			pannabledrawingarea1.QueueDraw();
+			pannabledrawingarea.QueueDraw();
 		}
 
 		protected void showAtlasBoxesToggled(object sender, EventArgs e)
 		{
-			pannabledrawingarea1.QueueDraw();
+			pannabledrawingarea.QueueDraw();
 		}
 
 		protected void toggleBlackBackground(object sender, EventArgs e)
 		{
-			pannabledrawingarea1.QueueDraw();
+			pannabledrawingarea.QueueDraw();
 		}
 	}
 }

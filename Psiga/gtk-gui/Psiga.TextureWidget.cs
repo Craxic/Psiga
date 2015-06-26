@@ -8,13 +8,15 @@ namespace Psiga
 		
 		private global::Gtk.VBox vbox1;
 		
-		private global::Psiga.PannableDrawingArea pannabledrawingarea1;
+		private global::Psiga.PannableDrawingArea pannabledrawingarea;
 		
 		private global::Gtk.HBox hbox1;
 		
 		private global::Gtk.Button exportPNG;
 		
 		private global::Gtk.Button resetTransforms;
+		
+		private global::Gtk.Button importPNG;
 		
 		private global::Gtk.CheckButton showAtlasLabels;
 		
@@ -44,10 +46,10 @@ namespace Psiga
 			this.vbox1.Name = "vbox1";
 			this.vbox1.Spacing = 6;
 			// Container child vbox1.Gtk.Box+BoxChild
-			this.pannabledrawingarea1 = new global::Psiga.PannableDrawingArea ();
-			this.pannabledrawingarea1.Name = "pannabledrawingarea1";
-			this.vbox1.Add (this.pannabledrawingarea1);
-			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.pannabledrawingarea1]));
+			this.pannabledrawingarea = new global::Psiga.PannableDrawingArea ();
+			this.pannabledrawingarea.Name = "pannabledrawingarea";
+			this.vbox1.Add (this.pannabledrawingarea);
+			global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.pannabledrawingarea]));
 			w1.Position = 0;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.hbox1 = new global::Gtk.HBox ();
@@ -71,11 +73,22 @@ namespace Psiga
 			this.hbox1.Add (this.resetTransforms);
 			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.resetTransforms]));
 			w3.Position = 1;
-			this.vbox1.Add (this.hbox1);
-			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.hbox1]));
-			w4.Position = 1;
+			// Container child hbox1.Gtk.Box+BoxChild
+			this.importPNG = new global::Gtk.Button ();
+			this.importPNG.CanFocus = true;
+			this.importPNG.Name = "importPNG";
+			this.importPNG.UseUnderline = true;
+			this.importPNG.Label = global::Mono.Unix.Catalog.GetString ("Import from PNG");
+			this.hbox1.Add (this.importPNG);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.importPNG]));
+			w4.Position = 2;
 			w4.Expand = false;
 			w4.Fill = false;
+			this.vbox1.Add (this.hbox1);
+			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.hbox1]));
+			w5.Position = 1;
+			w5.Expand = false;
+			w5.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.showAtlasLabels = new global::Gtk.CheckButton ();
 			this.showAtlasLabels.CanFocus = true;
@@ -84,10 +97,10 @@ namespace Psiga
 			this.showAtlasLabels.DrawIndicator = true;
 			this.showAtlasLabels.UseUnderline = true;
 			this.vbox1.Add (this.showAtlasLabels);
-			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.showAtlasLabels]));
-			w5.Position = 2;
-			w5.Expand = false;
-			w5.Fill = false;
+			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.showAtlasLabels]));
+			w6.Position = 2;
+			w6.Expand = false;
+			w6.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.showAtlasBoxes = new global::Gtk.CheckButton ();
 			this.showAtlasBoxes.CanFocus = true;
@@ -96,10 +109,10 @@ namespace Psiga
 			this.showAtlasBoxes.DrawIndicator = true;
 			this.showAtlasBoxes.UseUnderline = true;
 			this.vbox1.Add (this.showAtlasBoxes);
-			global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.showAtlasBoxes]));
-			w6.Position = 3;
-			w6.Expand = false;
-			w6.Fill = false;
+			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.showAtlasBoxes]));
+			w7.Position = 3;
+			w7.Expand = false;
+			w7.Fill = false;
 			// Container child vbox1.Gtk.Box+BoxChild
 			this.blackBackground = new global::Gtk.CheckButton ();
 			this.blackBackground.CanFocus = true;
@@ -108,10 +121,10 @@ namespace Psiga
 			this.blackBackground.DrawIndicator = true;
 			this.blackBackground.UseUnderline = true;
 			this.vbox1.Add (this.blackBackground);
-			global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.blackBackground]));
-			w7.Position = 4;
-			w7.Expand = false;
-			w7.Fill = false;
+			global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.blackBackground]));
+			w8.Position = 4;
+			w8.Expand = false;
+			w8.Fill = false;
 			this.notebook1.Add (this.vbox1);
 			// Notebook tab
 			this.previewPage = new global::Gtk.Label ();
@@ -124,8 +137,8 @@ namespace Psiga
 			this.propertyview.Events = ((global::Gdk.EventMask)(256));
 			this.propertyview.Name = "propertyview";
 			this.notebook1.Add (this.propertyview);
-			global::Gtk.Notebook.NotebookChild w9 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.propertyview]));
-			w9.Position = 1;
+			global::Gtk.Notebook.NotebookChild w10 = ((global::Gtk.Notebook.NotebookChild)(this.notebook1 [this.propertyview]));
+			w10.Position = 1;
 			// Notebook tab
 			this.propertiesPage = new global::Gtk.Label ();
 			this.propertiesPage.Name = "propertiesPage";
@@ -139,6 +152,7 @@ namespace Psiga
 			this.Hide ();
 			this.exportPNG.Clicked += new global::System.EventHandler (this.onExportPNG);
 			this.resetTransforms.Clicked += new global::System.EventHandler (this.onResetTransforms);
+			this.importPNG.Clicked += new global::System.EventHandler (this.importPNG_Clicked);
 			this.showAtlasLabels.Toggled += new global::System.EventHandler (this.showAtlasLabelsToggled);
 			this.showAtlasBoxes.Toggled += new global::System.EventHandler (this.showAtlasBoxesToggled);
 			this.blackBackground.Toggled += new global::System.EventHandler (this.toggleBlackBackground);

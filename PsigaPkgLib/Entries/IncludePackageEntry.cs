@@ -21,6 +21,11 @@ namespace PsigaPkgLib.Entries
 			return new IncludePackageEntry(StreamHelpers.ReadString(input));
 		}
 
+		public override void WriteTo(Stream s)
+		{
+			s.WriteString(DisplayName);
+		}
+
 		public override EntryType Type { get { return EntryType.IncludePackage; } }
 
 		public override string DisplayName { get { return PackageName; } }

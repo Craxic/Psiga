@@ -4,81 +4,110 @@
 using System;
 using Microsoft.Xna.Framework.Graphics;
 using System.ComponentModel;
+using System.IO;
+using LibSquishDxt5;
 
 namespace PsigaXnbLib
 {
 	public class Texture
 	{
+		/*
+			Format name                                        | Red (byte[] order)
+			---------------------------------------------------+--------------------
+			System.Drawing.Imaging.PixelFormat.Format32bppArgb | 00 00 FF FF (B G R A)
+			ImageSurface.Format.Argb32                         | 00 00 FF FF (B G R A)
+			DxtUtil.DecompressDxt5                             | FF 00 00 FF (R G B A)
+			Squish                                             | FF 00 00 FF (R G B A)
+		*/
+
 		public SurfaceFormat Format { get; private set; }
 		public int Width { get; private set; }
 		public int Height { get; private set; }
 
-		private byte[] Data { get; set; }
-		private byte[] DecompressedData { get; set; }
-
 		[EditorBrowsableAttribute(EditorBrowsableState.Never)]
-		public bool IsDecompressed { get { return DecompressedData != null; } }
+		public byte[] RGBAData { get; set; }
 
 		public Texture(SurfaceFormat format, int width, int height, byte[] data)
 		{
 			Width = width;
 			Height = height;
-			Data = data;
 			Format = format;
-		}
-
-		private byte[] GetDecompressedRGBA32() {
-			byte[] data;
-			lock (this) {
-				data = Data;
-			}
-			if (data == null) {
-				return null;
-			}
-			if (Format == SurfaceFormat.Dxt5) {
-				return DxtUtil.DecompressDxt5(data, Width, Height);
-			} else if (Format == SurfaceFormat.Color) {
-				return data;
+			if (Format == SurfaceFormat.Color) {
+				RGBAData = data;
+			} else if (Format == SurfaceFormat.Dxt5) {
+				RGBAData = DxtUtil.DecompressDxt5(data, Width, Height);
 			} else {
 				throw new PsigaShimUnsupported();
 			}
 		}
 
-		public byte[] GetDecompressedARGB32PreMul() {
-			byte[] decompressed = null;
-			lock (this) {
-				decompressed = DecompressedData;
+		public static void BGRAtoRGBA(byte[] input) {
+			for (int i = 0; i < input.Length; i += 4) {
+				var b = input[i];
+				var g = input[i + 1];
+				var r = input[i + 2];
+				var a = input[i + 3];
+				input[i] = r;
+				input[i + 1] = g;
+				input[i + 2] = b;
+				input[i + 3] = a;
 			}
-			if (decompressed == null) {
-				byte[] retn = GetDecompressedRGBA32();
+		}
 
-				for (int y = 0; y < Height; y++) {
-					for (int x = 0; x < Width; x++) {
-						int loc = (y * Width + x) * 4;
-						byte r = retn[loc];
-						byte g = retn[loc + 1];
-						byte b = retn[loc + 2];
-						byte a = retn[loc + 3];
-
-						r = (byte)(((int)r * (int)a) / 255);
-						g = (byte)(((int)g * (int)a) / 255);
-						b = (byte)(((int)b * (int)a) / 255);
-
-						retn[loc] = b;
-						retn[loc + 1] = g;
-						retn[loc + 2] = r;
-						retn[loc + 3] = a;
-					}
-				}
-
-				decompressed = retn;
-				lock (this) {
-					DecompressedData = decompressed;
-					Data = null;
+		private unsafe byte[] CompressToDxt5() {
+			var retn = new byte[LibSquish.dxt5_size(Width, Height)];
+			fixed (byte * dataUCFixed = RGBAData) {
+				fixed (byte * retnFixed = retn) {
+					LibSquish.compress_dxt5((IntPtr)dataUCFixed, Width, Height, (IntPtr)retnFixed);
 				}
 			}
+			return retn;
+		}
 
-			return decompressed;
+		private string TYPE_READER_STRING = "Microsoft.Xna.Framework.Content.Texture2DReader";
+		private byte[] CreateXnbInner() {
+			using (MemoryStream ms = new MemoryStream()) {
+				BinaryWriter msw = new BinaryWriter(ms);
+				ms.WriteByte(1); // num ContentTypeReaders
+				msw.Write(TYPE_READER_STRING);
+				msw.Write((int)0);
+				ms.WriteByte(0); // sharedResourceCount == 0
+				ms.WriteByte(1); // typeReaderIndex == 1
+
+				msw.Write((int)Format);
+				msw.Write((int)Width);
+				msw.Write((int)Height);
+				msw.Write((int)1); // Mip level.
+				byte[] textureData;
+				if (Format == SurfaceFormat.Dxt5) {
+					textureData = CompressToDxt5();
+				} else if (Format == SurfaceFormat.Color) {
+					textureData = RGBAData;
+				} else {
+					throw new PsigaShimUnsupported();
+				}
+				msw.Write((int)textureData.Length);
+				ms.Write(textureData, 0, textureData.Length);
+
+				return ms.ToArray();
+			}
+		}
+
+		public byte[] CreateXnb() {
+			using (MemoryStream ms = new MemoryStream()) {
+				BinaryWriter msw = new BinaryWriter(ms);
+				ms.WriteByte((byte)'X'); // magic
+				ms.WriteByte((byte)'N');
+				ms.WriteByte((byte)'B');
+				ms.WriteByte((byte)'w'); // platform code
+				ms.WriteByte((byte)5); // version id
+				ms.WriteByte((byte)0); // flags
+
+				byte[] inner = CreateXnbInner();
+				msw.Write((int)inner.Length + 10); // Plus 10 for header
+				ms.Write(inner, 0, inner.Length);
+				return ms.ToArray();
+			}
 		}
 	}
 }

@@ -16,6 +16,7 @@ namespace PsigaPkgLib
 	{
 		public static event Action<string, Package> OnPackageLoad;
 		public static event Action OnRootChanged;
+		public static event Action<string> OnPackageUnload;
 
 		public static readonly object Lock = new object();
 		public static string RootDirectory { get; private set; }
@@ -23,7 +24,8 @@ namespace PsigaPkgLib
 		public static Dictionary<string, Package> LoadedPackages { get; private set; }
 		public static Dictionary<string, long> PackageSizes { get; private set; }
 
-		public static Dictionary<string, EntryReference> TextureEntries { get; private set; }
+		private static Dictionary<string, EntryReference> TexturesByName { get; set; }
+		private static Dictionary<string, List<EntryReference>> AtlasesByTextureName { get; set; }
 
 		private const string PKG_EXT = ".pkg";
 		private const string PKG_MANIFEST_EXT = ".pkg_manifest";
@@ -33,11 +35,23 @@ namespace PsigaPkgLib
 		static PackageManager() {
 			Packages = new List<string>();
 			LoadedPackages = new Dictionary<string, Package>();
-			TextureEntries = new Dictionary<string, EntryReference>();
+			TexturesByName = new Dictionary<string, EntryReference>();
+			AtlasesByTextureName = new Dictionary<string, List<EntryReference>>();
+		}
+
+		private static void AddTo<X, Y>(Dictionary<X, List<Y>> dict, X key, Y value) {
+			if (dict.ContainsKey(key)) {
+				dict[key].Add(value);
+			} else {
+				dict[key] = new List<Y> { value };
+			}
 		}
 
 		public static void SetTransistorRoot(string rootDirectory) {
 			lock (Lock) {
+				TexturesByName.Clear();
+				AtlasesByTextureName.Clear();
+
 				RootDirectory = rootDirectory;
 				Packages.Clear();
 				LoadedPackages.Clear();
@@ -64,15 +78,23 @@ namespace PsigaPkgLib
 			}
 		}
 
-		private static void FindTextures(PackageReference pr, IList<Entry> contents) {
+		private static void UpdateLinkDicts(PackageReference pr, IList<Entry> contents) {
 			for (int i = 0; i < contents.Count; i++) {
 				TextureEntry te = contents[i] as TextureEntry;
 				if (te != null) {
-					if (TextureEntries.ContainsKey(te.Name)) {
-						Console.WriteLine("Duplicate Texture entry: " + te.Name + " in " + pr.DisplayName + " and " + TextureEntries[te.Name].ContainingPackage.DisplayName);
+					if (TexturesByName.ContainsKey(te.Name)) {
+						Console.WriteLine("Duplicate Texture entry: " + te.Name + " in " + pr.DisplayName + " and " + TexturesByName[te.Name].ContainingPackage.DisplayName);
 					} else {
-						TextureEntries.Add(te.Name, new EntryReference(i, pr));
+						TexturesByName.Add(te.Name, new EntryReference(i, pr));
 					}
+					continue;
+				}
+				AtlasEntry ae = contents[i] as AtlasEntry;
+				if (ae != null) {
+					if (ae.IsReference) {
+						AddTo(AtlasesByTextureName, ae.ReferencedTextureName, new EntryReference(i, pr));
+					}
+					continue;
 				}
 			}
 		}
@@ -85,8 +107,8 @@ namespace PsigaPkgLib
 			lock (Lock) {
 				LoadedPackages.Add(packageName, package);
 
-				FindTextures(new PackageReference(packageName, PackageReference.Files.Manifest), package.ManifestContents);
-				FindTextures(new PackageReference(packageName, PackageReference.Files.Package), package.PackageContents);
+				UpdateLinkDicts(new PackageReference(packageName, PackageReference.Files.Manifest), package.ManifestContents);
+				UpdateLinkDicts(new PackageReference(packageName, PackageReference.Files.Package), package.PackageContents);
 			}
 			if (OnPackageLoad != null) {
 				OnPackageLoad(packageName, package);
@@ -137,11 +159,29 @@ namespace PsigaPkgLib
 				return null;
 			}
 			lock (Lock) {
-				if (TextureEntries.ContainsKey(textureName)) {
-					return TextureEntries[textureName].ContainingPackage.DisplayName;
+				if (TexturesByName.ContainsKey(textureName)) {
+					return TexturesByName[textureName].ContainingPackage.DisplayName;
 				}
 			}
 			return null;
+		}
+
+		public static List<AtlasEntry> GetAtlasesByTextureName(string textureName) {
+			lock (Lock) {
+				if (AtlasesByTextureName.ContainsKey(textureName)) {
+					return AtlasesByTextureName[textureName].Select(x => x.Dereference() as AtlasEntry).ToList();
+				}
+				return null;
+			}
+		}
+
+		public static TextureEntry GetTextureByName(string textureName) {
+			lock (Lock) {
+				if (TexturesByName.ContainsKey(textureName)) {
+					return TexturesByName[textureName].Dereference() as TextureEntry;
+				}
+				return null;
+			}
 		}
 	}
 }

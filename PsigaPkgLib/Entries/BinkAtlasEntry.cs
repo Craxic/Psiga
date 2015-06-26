@@ -49,6 +49,16 @@ namespace PsigaPkgLib.Entries
 			};
 		}
 
+		public override void WriteTo(Stream s)
+		{
+			int size = 12 + s.StringSize(Name);
+			s.WriteInt32BE(size);
+			s.WriteInt32BE(BINK_ATLAS_VERSION);
+			s.WriteString(Name);
+			s.WriteInt32BE(Width);
+			s.WriteInt32BE(Height);
+		}
+
 		public override EntryType Type { get { return EntryType.BinkAtlas; } }
 		public override string DisplayName { get { return Name; } }
 	}

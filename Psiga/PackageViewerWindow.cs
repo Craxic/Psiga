@@ -47,7 +47,9 @@ public partial class PackageViewerWindow : Gtk.Window, StatusReceiver
 
 	void ConvertAction_Activated (object sender, EventArgs e)
 	{
-		
+		foreach (var kvp in PackageManager.LoadedPackages) {
+			kvp.Value.WritePackageFiles("test_" + kvp.Key);
+		}
 	}
 
 	void SaveAction_Activated (object sender, EventArgs e)

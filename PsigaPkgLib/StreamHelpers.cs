@@ -11,6 +11,14 @@ namespace PsigaPkgLib
 	{
 		private const string ERR_STRING_OOB = "Could not read string from stream, not enough data. Needed {0}, got {1}";
 
+		public static byte[] MakeInt32BE(int input) {
+			var ret = BitConverter.GetBytes(input);
+			if (BitConverter.IsLittleEndian) {
+				Array.Reverse(ret);
+			}
+			return ret;
+		}
+
 		public static string ReadString(this Stream stream)
 		{
 			int stringLength = stream.ReadByte();
@@ -22,6 +30,13 @@ namespace PsigaPkgLib
 			return Encoding.ASCII.GetString(buffer, 0, stringLength);
 		}
 
+		public static int StringSize(this Stream stream, string write) {
+			if (write.Length > byte.MaxValue) {
+				throw new ArgumentOutOfRangeException("write", "Transistor Packages do not support strings longer than 255 characters.");
+			}
+			return 1 + Encoding.ASCII.GetBytes(write).Length;
+		}
+
 		public static void WriteString(this Stream stream, string write)
 		{
 			if (write.Length > byte.MaxValue) {
@@ -30,6 +45,38 @@ namespace PsigaPkgLib
 			stream.WriteByte((byte)write.Length);
 			byte[] writeBuffer = Encoding.ASCII.GetBytes(write);
 			stream.Write(writeBuffer, 0, writeBuffer.Length);
+		}
+
+		public static void WriteSingleBE(this Stream stream, float write)
+		{
+			stream.WriteBE(BitConverter.GetBytes(write));
+		}
+
+		public static void WriteUInt16BE(this Stream stream, UInt16 write)
+		{
+			stream.WriteBE(BitConverter.GetBytes(write));
+		}
+
+		public static void WriteInt16BE(this Stream stream, Int16 write)
+		{
+			stream.WriteBE(BitConverter.GetBytes(write));
+		}
+
+		public static void WriteUInt32BE(this Stream stream, UInt32 write)
+		{
+			stream.WriteBE(BitConverter.GetBytes(write));
+		}
+
+		public static void WriteInt32BE(this Stream stream, Int32 write)
+		{
+			stream.WriteBE(BitConverter.GetBytes(write));
+		}
+
+		public static void WriteBE(this Stream stream, byte[] bytes) {
+			if (BitConverter.IsLittleEndian) {
+				Array.Reverse(bytes);
+			}
+			stream.Write(bytes, 0, bytes.Length);
 		}
 
 		// Some of the code below from http://stackoverflow.com/a/15274591/308098
