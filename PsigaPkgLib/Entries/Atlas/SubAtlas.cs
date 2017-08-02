@@ -2,6 +2,7 @@
 /// Copyright (C) 2015 Matthew Ready.
 /// </summary>
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.ComponentModel;
 
@@ -18,6 +19,7 @@ namespace PsigaPkgLib.Entries.Atlas
 		public Vector2 ScaleRatio { get; set; }
 		public bool IsMultiTexture { get; set; }
 		public bool IsMip { get; set; }
+		public List<IntVector2> Hull { get; set; }
 	}
 }
 

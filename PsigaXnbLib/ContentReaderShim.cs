@@ -12,84 +12,35 @@ namespace Microsoft.Xna.Framework.Content
 {
 	public sealed class ContentReaderShim : BinaryReader
 	{
-		private ContentTypeReaderManager typeReaderManager;
-		private List<KeyValuePair<int, Action<object>>> sharedResourceFixups;
-		private ContentTypeReader[] typeReaders;
-		internal int sharedResourceCount;
+		public int Version { get; private set; }
 
-		internal ContentTypeReader[] TypeReaders
+		internal ContentReaderShim(Stream stream, int version) : base(stream)
 		{
-			get
-			{
-				return typeReaders;
-			}
+			Version = version;
 		}
-
-		internal ContentReaderShim(Stream stream) : base(stream) { }
 
 		public object ReadAsset<T>()
 		{
-			InitializeTypeReaders();
+			if (Version < 6)
+			{
+				// Transistor: Skip old unused resource loader deets. Used to call ContentReaderManager here.
+				int num = Read7BitEncodedInt();
+				for (int i = 0; i < num; i++)
+				{
+					ReadString();
+					ReadInt32();
+				}
+				Read7BitEncodedInt();
+				Read7BitEncodedInt();
 
-			// Read primary object
-			object result = ReadObject<T>();
+				if (typeof(T) != typeof(Texture))
+				{
+					throw new Exception("Only textures are supported for the version 5 format.");
+				}
+			}
 
-			// Read shared resources
-			ReadSharedResources();
-
-			return result;
-		}
-
-		internal void InitializeTypeReaders()
-		{
-			typeReaderManager = new ContentTypeReaderManager(this);
-			typeReaders = typeReaderManager.LoadAssetReaders();
-			sharedResourceCount = Read7BitEncodedInt();
-			sharedResourceFixups = new List<KeyValuePair<int, Action<object>>>();
-		}
-
-		internal void ReadSharedResources()
-		{
-			if (sharedResourceCount <= 0)
-				return;
-
-			var sharedResources = new object[sharedResourceCount];
-			for (var i = 0; i < sharedResourceCount; ++i)
-				sharedResources[i] = InnerReadObject<object>(null);
-
-			// Fixup shared resources by calling each registered action
-			foreach (var fixup in sharedResourceFixups)
-				fixup.Value(sharedResources[fixup.Key]);
-		}
-
-		public T ReadObject<T>()
-		{
-			return ReadObject(default(T));
-		}
-
-		public T ReadObject<T>(T existingInstance)
-		{
-			return InnerReadObject(existingInstance);
-		}
-
-		private T InnerReadObject<T>(T existingInstance)
-		{
-			var typeReaderIndex = Read7BitEncodedInt();
-			if (typeReaderIndex == 0)
-				return existingInstance;
-
-			if (typeReaderIndex > typeReaders.Length)
-				throw new ContentLoadException("Incorrect type reader index found!");
-
-			var typeReader = typeReaders[typeReaderIndex - 1];
-			var result = (T)typeReader.Read(this);
-
-			return result;
-		}
-
-		internal new int Read7BitEncodedInt()
-		{
-			return base.Read7BitEncodedInt();
+			// Use the content type reader for the requested type directly.
+			return ContentTypeReaderManager.GetTypeReader(typeof(T)).Read(this);
 		}
 	}
 }

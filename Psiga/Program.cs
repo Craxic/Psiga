@@ -11,8 +11,6 @@ namespace Psiga
 	{
 		public static void Main(string[] args)
 		{
-			PackageManager.SetTransistorRoot("/home/matthew/Documents/Share/TransistorPackages");
-
 			Application.Init();
 			PackageViewerWindow win = new PackageViewerWindow();
 			win.Show();

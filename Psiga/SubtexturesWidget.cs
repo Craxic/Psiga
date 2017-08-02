@@ -46,7 +46,10 @@ namespace Psiga
 
 				if (index == s.Length) {
 					// Leaf node.
-					Atlas = atlas;
+					if (Atlas == null || Atlas.Rect.Width < atlas.Rect.Width)
+					{
+						Atlas = atlas;
+					}
 					return;
 				}
 

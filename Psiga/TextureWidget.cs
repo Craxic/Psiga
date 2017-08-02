@@ -200,7 +200,7 @@ namespace Psiga
 				Marshal.Copy(locked.Scan0, newData, 0, newData.Length);
 				file.UnlockBits(locked);
 				Texture.BGRAtoRGBA(newData);
-				viewing.Texture.RGBAData = newData;
+			    viewing.Texture.SetRgbaData(newData);
 				TextureCache.Flush(viewing);
 				decompressed = null;
 				LoadTextureAsync();

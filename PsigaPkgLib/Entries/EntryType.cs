@@ -11,7 +11,11 @@ namespace PsigaPkgLib
 		BinkAtlas,
 		Bink,
 		IncludePackage,
-		Texture
+		Texture,
+		
+		// Pyre:
+		Spine,
+		Texture3D
 	}
 }
 

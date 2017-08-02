@@ -99,10 +99,10 @@ namespace PsigaPkgLib
 			}
 		}
 
-		public static Package LoadPackage(string packageName) {
+		public static Package LoadPackage(string packageName, Package.AsyncLoadPackageCallback cb) {
 			var baseFile = Path.Combine(RootDirectory, packageName);
 			var package = new Package(packageName, baseFile + PKG_MANIFEST_EXT, baseFile + PKG_EXT);
-			package.Load();
+			package.Load(cb);
 
 			lock (Lock) {
 				LoadedPackages.Add(packageName, package);
@@ -141,10 +141,11 @@ namespace PsigaPkgLib
 
 				// Load each package
 				foreach (var package in packageNames) {
-					double fraction = i / (double)packageNames.Count;
-					cb(package, fraction);
+					double fractionFrom = i / (double)packageNames.Count;
+					double fractionTo = (i+1) / (double)packageNames.Count;
+					cb(package, fractionFrom);
 					if (!PackageManager.IsLoaded(package)) {
-						PackageManager.LoadPackage(package);
+						PackageManager.LoadPackage(package, p => cb(package, fractionFrom + (fractionTo-fractionFrom)*p));
 					}
 					i++;
 				}

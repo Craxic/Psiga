@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -36,6 +36,9 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entries\SpineEntry.cs" />
+    <Compile Include="Entries\Texture3DEntry.cs" />
+    <Compile Include="IntVector2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReadStatus.cs" />
     <Compile Include="StreamHelpers.cs" />
@@ -57,10 +60,7 @@
     <Compile Include="LZF.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <Folder Include="Entries\" />
-    <Folder Include="Entries\Atlas\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\PsigaXnbLib\PsigaXnbLib.csproj">
       <Project>{444EEDC3-0D34-4F2E-9417-165DA4ABD82F}</Project>

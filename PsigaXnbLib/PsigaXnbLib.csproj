@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -48,9 +48,15 @@
     <Compile Include="ContentReaderShim.cs" />
     <Compile Include="ContentReaderManager.cs" />
     <Compile Include="DxtUtil.cs" />
+    <Compile Include="Texture3D.cs" />
+    <Compile Include="Texture3DRipperReader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <ProjectReference Include="..\DetexCS\DetexCS.csproj">
+      <Project>{c2cf81b8-149d-4bac-a26f-c84dbb3f1ae2}</Project>
+      <Name>DetexCS</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LibSquishDxt5\LibSquishDxt5.csproj">
       <Project>{8FB5758C-2388-45C5-877D-708155C07CA9}</Project>
       <Name>LibSquishDxt5</Name>

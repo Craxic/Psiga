@@ -11,7 +11,8 @@ namespace PsigaXnbLib
 	class Texture2DRipperReader : ContentTypeReader {
 		public override object Read(BinaryReader reader)
 		{
-			SurfaceFormat pixelFormat = (SurfaceFormat)reader.ReadInt32();
+			int formatInt = reader.ReadInt32();
+			SurfaceFormat pixelFormat = (SurfaceFormat)formatInt;
 			int width = reader.ReadInt32();
 			int height = reader.ReadInt32();
 			int levelCount = reader.ReadInt32();

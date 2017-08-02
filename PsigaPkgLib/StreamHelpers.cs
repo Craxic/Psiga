@@ -106,6 +106,30 @@ namespace PsigaPkgLib
 			return BitConverter.ToInt32(stream.ReadBigEndianBytes(sizeof(Int32)), 0);
 		}
 
+		public static string ReadBigString(this Stream stream)
+		{
+			int len = stream.ReadInt32BE();
+			if (len < 0)
+			{
+				throw new EndOfStreamException(string.Format("Positive length required from stream, but got {0}.", len));
+			}
+			
+			var bytes = new byte[len];
+			var read = stream.Read(bytes, 0, len);
+			if (read != len)
+			{
+				throw new EndOfStreamException(string.Format("{0} bytes required from stream, but only {1} returned.", len, read));
+			}
+			return Encoding.UTF8.GetString(bytes);
+		}
+
+		public static void WriteBigString(this Stream stream, string write)
+		{
+			var bytes = Encoding.UTF8.GetBytes(write);
+			stream.WriteInt32BE(bytes.Length);
+			stream.Write(bytes, 0, bytes.Length);
+		}
+
 		public static byte[] ReadBigEndianBytes(this Stream stream, int byteCount)
 		{
 			var buffer = new byte[byteCount];

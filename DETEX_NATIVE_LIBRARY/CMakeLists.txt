@@ -1,0 +1,3 @@
+cmake_minimum_required (VERSION 2.8.11)
+project (DetexCS)
+add_library (DetexCSNative SHARED detexcs_native.c detex/bits.c detex/bptc-tables.c detex/clamp.c detex/convert.c detex/dds.c detex/decompress-bc.c detex/decompress-bptc.c detex/decompress-bptc-float.c detex/decompress-eac.c detex/decompress-etc.c detex/decompress-rgtc.c detex/division-tables.c detex/file-info.c detex/half-float.c detex/hdr.c detex/ktx.c detex/misc.c detex/png.c detex/raw.c detex/texture.c)

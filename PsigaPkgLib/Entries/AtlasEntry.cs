@@ -23,6 +23,7 @@ namespace PsigaPkgLib.Entries
 		public List<SubAtlas> Entries { get; protected set; }
 
 		public bool IsReference { get; protected set; }
+		public int VersionCode { get; protected set; }
 
 		public TextureEntry IncludedTextureEntry { get; protected set; }
 		public string ReferencedTextureName { get; protected set; }
@@ -51,6 +52,7 @@ namespace PsigaPkgLib.Entries
 
 			var entry = new AtlasEntry();
 			entry.Entries = new List<SubAtlas>();
+			entry.VersionCode = atlasVersionCode;
 
 			// Read all sub atlases.
 			for (int i = 0; i < numSubAtlases; i++) {
@@ -71,6 +73,18 @@ namespace PsigaPkgLib.Entries
 						isMultiTexture = atlasType != 0;
 					}
 				}
+				List<IntVector2> hull = null;
+				if (atlasVersionCode > 2)
+				{
+					int hullCount = input.ReadInt32BE();
+					hull = new List<IntVector2>();
+					for (int j = 0; j < hullCount; j++)
+					{
+						int num10 = input.ReadInt32BE();
+						int num11 = input.ReadInt32BE();
+						hull.Add(new IntVector2(num10, num11));
+					}
+				}
 
 				entry.Entries.Add(new SubAtlas() {
 					Parent = entry,
@@ -81,11 +95,13 @@ namespace PsigaPkgLib.Entries
 					ScaleRatio = scaleRatio,
 					IsMultiTexture = isMultiTexture,
 					IsMip = isMip,
+					Hull = hull,
 				});
 			}
 
 			// Is this a reference to the texture, or the actual thing? If we're reading a manifest, then its always a 
 			// reference.
+			//byte unkByte = (byte)input.ReadByte();
 			byte refByte = (byte)input.ReadByte();
 			bool isReference = refByte == REFERENCE_CODE || isManifest;
 			entry.IsReference = isReference;
@@ -106,7 +122,7 @@ namespace PsigaPkgLib.Entries
 				ms.WriteInt32BE(NEW_ATLAS_VERSION_MAGIC);
 
 				// Write the newest version code (2)
-				ms.WriteInt32BE(2);
+				ms.WriteInt32BE(VersionCode);
 
 				// Write the number of SubAtlases
 				ms.WriteInt32BE(Entries.Count);
@@ -132,6 +148,18 @@ namespace PsigaPkgLib.Entries
 					// Write the scale ratio
 					ms.WriteSingleBE(entry.ScaleRatio.X);
 					ms.WriteSingleBE(entry.ScaleRatio.Y);
+
+					// Write the hull. I'm not gonna touch this data.
+					if (VersionCode > 2)
+					{
+						var hullCount = entry.Hull.Count;
+						ms.WriteInt32BE(hullCount);
+						foreach (IntVector2 jj in entry.Hull)
+						{
+							ms.WriteInt32BE(jj.X);
+							ms.WriteInt32BE(jj.Y);
+						}
+					}
 
 					// Write the byte for the flags
 					ms.WriteByte((byte)((entry.IsMip ? IS_MIP_FLAG : 0) | (entry.IsMultiTexture ? IS_MULTI_TEXTURE_FLAG : 0)));

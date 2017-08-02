@@ -14,7 +14,10 @@ namespace PsigaPkgLib
 	/// </summary>
 	public class Package
 	{
-		private const int CHUNK_SIZE = 0x800000;
+		public delegate void AsyncLoadPackageCallback(float progress);
+		
+		private const int CHUNK_SIZE = 0x2000000;
+		private const int COMP_BUFFER_SIZE = 0x2000000;
 		private const int COMPRESSION_FLAG = 0x40000000;
 		private const int PACKAGE_VERSION_CODE = 5;
 
@@ -81,9 +84,9 @@ namespace PsigaPkgLib
 		/// <summary>
 		/// Opens the files and reads the contents of the package.
 		/// </summary>
-		public void Load() {
-			manifestContents = TakeOwnership(ManifestReference, LoadManifest(manifestFile));
-			packageContents = TakeOwnership(PackageReference, LoadPackage(packageFile));
+		public void Load(AsyncLoadPackageCallback cb) {
+			manifestContents = TakeOwnership(ManifestReference, LoadManifest(manifestFile, p => cb(p*0.1f)));
+			packageContents = TakeOwnership(PackageReference, LoadPackage(packageFile, p => cb(p*0.9f+0.1f)));
 
 			isPackageLoaded = true;
 		}
@@ -106,7 +109,12 @@ namespace PsigaPkgLib
 		public const byte BINK_CODE = 0xBB;
 		public const byte TEXTURE_CODE = 0xAD;
 		public const byte END_CHUNK_CODE = 0xBE;
-
+		
+		// New in Pyre:
+		public const byte TEXTURE_3D_CODE = 0xAA;
+		public const byte TEXTURE_REF_CODE = 0xDD;
+		public const byte SPINE_CODE = 0xF0;
+		
 		private static byte GetCodeFromType(EntryType type) {
 			switch (type) {
 			case EntryType.BinkAtlas:
@@ -119,6 +127,10 @@ namespace PsigaPkgLib
 				return BINK_CODE;
 			case EntryType.Texture:
 				return TEXTURE_CODE;
+			case EntryType.Spine:
+				return SPINE_CODE;
+			case EntryType.Texture3D:
+				return TEXTURE_3D_CODE;
 			}
 			return END_CHUNK_CODE;
 		}
@@ -149,7 +161,7 @@ namespace PsigaPkgLib
 		/// <summary>
 		/// Opens and loads all contents of the package manifest file.
 		/// </summary>
-		private static List<Entry> LoadManifest(string manifestFile) {
+		private static List<Entry> LoadManifest(string manifestFile, AsyncLoadPackageCallback cb) {
 			// Open the file we're going to read.
 			using (var fs = File.OpenRead(manifestFile)) {
 				var contents = new List<Entry>(1024);
@@ -178,6 +190,7 @@ namespace PsigaPkgLib
 						if (e != null) {
 							contents.Add(e);
 						}
+						cb(fs.Position / (float)fs.Length);
 					} while (readStatus != ReadStatus.EndOfChunk && readStatus != ReadStatus.EndOfFile);
 				} while (readStatus == ReadStatus.EndOfChunk);
 
@@ -289,7 +302,7 @@ namespace PsigaPkgLib
 				ms.WriteInt32BE(headerCode);
 
 				if (compressed) {
-					var compressionBuffer = new byte[8388608];
+					var compressionBuffer = new byte[COMP_BUFFER_SIZE];
 					var compressor = new LZF();
 					foreach (var chunk in chunks) {
 						int compressedSize = compressor.Compress(chunk, chunk.Length, compressionBuffer, compressionBuffer.Length);
@@ -346,6 +359,10 @@ namespace PsigaPkgLib
 				return BinkEntry.Read(chunk);
 			case TEXTURE_CODE:
 				return TextureEntry.Read(chunk);
+			case SPINE_CODE:
+				return SpineEntry.Read(chunk);
+			case TEXTURE_3D_CODE:
+				return Texture3DEntry.Read(chunk);
 			case END_CHUNK_CODE:
 				readStatus = ReadStatus.EndOfChunk;
 				return null;
@@ -358,7 +375,7 @@ namespace PsigaPkgLib
 			}
 		}
 
-		private static List<Entry> LoadPackage(string dataFile) {
+		private static List<Entry> LoadPackage(string dataFile, AsyncLoadPackageCallback cb) {
 			using (var fs = File.OpenRead(dataFile)) {
 				var contents = new List<Entry>(1024);
 				var readBuffer = new byte[CHUNK_SIZE];
@@ -372,7 +389,7 @@ namespace PsigaPkgLib
 				if ((packageHeader & COMPRESSION_FLAG) != 0) {
 					packageHeader &= ~COMPRESSION_FLAG;
 					isCompressed = true;
-					compressionBuffer = new byte[8388608];
+					compressionBuffer = new byte[COMP_BUFFER_SIZE];
 				}
 				if (packageHeader != PACKAGE_VERSION_CODE) {
 					throw new PackageReadException(string.Format(ERR_PACKAGE_VERSION, packageHeader, dataFile));
@@ -381,7 +398,9 @@ namespace PsigaPkgLib
 				LZF decompressor = new LZF();
 				// Read all chunks in the file
 				ReadStatus readStatus;
-				do {
+				do
+				{
+					float from = fs.Position / (float) fs.Length;
 					int chunkSize;
 					if (isCompressed && fs.ReadByte() != 0) {
 						int num2 = fs.ReadInt32BE();
@@ -390,9 +409,8 @@ namespace PsigaPkgLib
 					} else {
 						chunkSize = fs.Read(readBuffer, 0, packageLength);
 					}
-					byte[] test = new byte[chunkSize];
-					Array.Copy(readBuffer, test, chunkSize);
-					File.WriteAllBytes("test", test);
+					float to = fs.Position / (float) fs.Length;
+					
 					packageLength = readBuffer.Length;
 					var chunk = new MemoryStream(readBuffer, 0, chunkSize, false);
 					do {
@@ -400,6 +418,7 @@ namespace PsigaPkgLib
 						if (e != null) {
 							contents.Add(e);
 						}
+						cb(from + (to-from)*(chunk.Position / (float)chunk.Length));
 					} while (readStatus != ReadStatus.EndOfChunk && readStatus != ReadStatus.EndOfFile);
 				} while (readStatus == ReadStatus.EndOfChunk);
 

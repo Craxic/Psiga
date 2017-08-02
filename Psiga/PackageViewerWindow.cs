@@ -22,7 +22,15 @@ public partial class PackageViewerWindow : Gtk.Window, StatusReceiver
 		convertAction.Activated += ConvertAction_Activated;
 		subtexturesAction.Toggled += SubtexturesAction_Toggled;
 		packagewidget1.StatusReceiver = this;
-	}
+
+	    Gtk.MessageDialog d = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.Ok, 
+            "Hey there! Please be sure to only open one or two large packages at once. "+
+            "Pyre is a much larger game than Transistor, and due to circumstances "+
+            "beyond my control this program has to be 32 bit. So it /will/ crash "+ // Gotta be 32 bit because GTK sharp only has a 32 bit installer.
+            "when it runs out of memory!!");
+	    d.Run();
+	    d.Destroy();
+    }
 
 	void SubtexturesAction_Toggled (object sender, EventArgs e)
 	{
@@ -54,7 +62,9 @@ public partial class PackageViewerWindow : Gtk.Window, StatusReceiver
 
 	void SaveAction_Activated (object sender, EventArgs e)
 	{
-		
+		Gtk.MessageDialog d = new MessageDialog(this, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, "Sorry, but I haven't made this yet...");
+	    d.Run();
+        d.Destroy();
 	}
 
 	void OpenAction_Activated (object sender, EventArgs e)

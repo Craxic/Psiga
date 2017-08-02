@@ -31,7 +31,7 @@ namespace PsigaPkgLib.Entries
 				throw new EntryReadException(string.Format(ERR_TEXTURE_DATA, textureName, size));
 			}
 			var originalPosition = input.Position;
-			var crs = ContentManagerShim.GetContentReaderFromXnb(textureName, ref input, new BinaryReader(input));
+			var crs = ContentManagerShim.GetContentReaderFromXnb(textureName, input, new BinaryReader(input));
 			var entry =  new TextureEntry() {
 				Name = textureName,
 				Texture = (Texture)crs.ReadAsset<Texture>()

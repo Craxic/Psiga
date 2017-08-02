@@ -64,7 +64,9 @@ namespace Psiga
 				{ EntryType.Bink, new Pixbuf("./img/bink.png") },
 				{ EntryType.BinkAtlas, new Pixbuf("./img/bink-atlas.png") },
 				{ EntryType.IncludePackage, new Pixbuf("./img/include-package.png") },
-				{ EntryType.Texture, new Pixbuf("./img/texture.png") }
+				{ EntryType.Texture, new Pixbuf("./img/texture.png") },
+				{ EntryType.Texture3D, new Pixbuf("./img/texture3d.png") },
+				{ EntryType.Spine, new Pixbuf("./img/spine.png") }
 			};
 			propertyView = new PropertyView();
 			textureWidget = new TextureWidget();
