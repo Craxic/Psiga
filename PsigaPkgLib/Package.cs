@@ -19,7 +19,8 @@ namespace PsigaPkgLib
 		private const int CHUNK_SIZE = 0x2000000;
 		private const int COMP_BUFFER_SIZE = 0x2000000;
 		private const int COMPRESSION_FLAG = 0x40000000;
-		private const int PACKAGE_VERSION_CODE = 5;
+		private const int PACKAGE_VERSION_CODE_TRANSISTOR_PYRE = 5;
+		private const int PACKAGE_VERSION_CODE_HADES = 6;
 
 		private const string ERR_COMPRESSED_MANIFEST = "Compressed manifests are not allowed (in file {0})";
 		private const string ERR_PACKAGE_VERSION = "Package version {0} is not supported (in file {1})";
@@ -173,7 +174,10 @@ namespace PsigaPkgLib
 				if ((manifestHeader & COMPRESSION_FLAG) != 0) {
 					throw new PackageReadException(string.Format(ERR_COMPRESSED_MANIFEST, manifestFile));
 				}
-				if (manifestHeader != PACKAGE_VERSION_CODE) {
+
+				int manifestVersion = manifestHeader;
+				if (manifestVersion != PACKAGE_VERSION_CODE_TRANSISTOR_PYRE
+				    && manifestVersion != PACKAGE_VERSION_CODE_HADES) {
 					throw new PackageReadException(string.Format(ERR_PACKAGE_VERSION, manifestHeader, manifestFile));
 				}
 
@@ -295,7 +299,7 @@ namespace PsigaPkgLib
 		private static byte[] MakeChunksIntoPackage(List<byte[]> chunks, bool compressed) {
 			AssertOnChunks(chunks);
 			using (MemoryStream ms = new MemoryStream(chunks.Count * CHUNK_SIZE)) {
-				int headerCode = PACKAGE_VERSION_CODE;
+				int headerCode = PACKAGE_VERSION_CODE_TRANSISTOR_PYRE;
 				if (compressed) {
 					headerCode |= COMPRESSION_FLAG;
 				}
@@ -391,7 +395,8 @@ namespace PsigaPkgLib
 					isCompressed = true;
 					compressionBuffer = new byte[COMP_BUFFER_SIZE];
 				}
-				if (packageHeader != PACKAGE_VERSION_CODE) {
+				if (packageHeader != PACKAGE_VERSION_CODE_TRANSISTOR_PYRE
+					&& packageHeader != PACKAGE_VERSION_CODE_HADES) {
 					throw new PackageReadException(string.Format(ERR_PACKAGE_VERSION, packageHeader, dataFile));
 				}
 
