@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Psiga", "Psiga\Psiga.csproj", "{BB3571E3-9ADE-4BE7-AA0F-93285CC5AAA2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PsigaPkgLib", "PsigaPkgLib\PsigaPkgLib.csproj", "{28DF2A5C-66C2-4399-BF5C-0938B73ED0A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PsigaXnbLib", "PsigaXnbLib\PsigaXnbLib.csproj", "{444EEDC3-0D34-4F2E-9417-165DA4ABD82F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibSquishDxt5", "LibSquishDxt5\LibSquishDxt5.csproj", "{8FB5758C-2388-45C5-877D-708155C07CA9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DetexCS", "DetexCS\DetexCS.csproj", "{C2CF81B8-149D-4BAC-A26F-C84DBB3F1AE2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB3571E3-9ADE-4BE7-AA0F-93285CC5AAA2}.Debug|x86.ActiveCfg = Debug|x86
+		{BB3571E3-9ADE-4BE7-AA0F-93285CC5AAA2}.Debug|x86.Build.0 = Debug|x86
+		{BB3571E3-9ADE-4BE7-AA0F-93285CC5AAA2}.Release|x86.ActiveCfg = Release|x86
+		{BB3571E3-9ADE-4BE7-AA0F-93285CC5AAA2}.Release|x86.Build.0 = Release|x86
+		{28DF2A5C-66C2-4399-BF5C-0938B73ED0A8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{28DF2A5C-66C2-4399-BF5C-0938B73ED0A8}.Debug|x86.Build.0 = Debug|Any CPU
+		{28DF2A5C-66C2-4399-BF5C-0938B73ED0A8}.Release|x86.ActiveCfg = Release|Any CPU
+		{28DF2A5C-66C2-4399-BF5C-0938B73ED0A8}.Release|x86.Build.0 = Release|Any CPU
+		{444EEDC3-0D34-4F2E-9417-165DA4ABD82F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{444EEDC3-0D34-4F2E-9417-165DA4ABD82F}.Debug|x86.Build.0 = Debug|Any CPU
+		{444EEDC3-0D34-4F2E-9417-165DA4ABD82F}.Release|x86.ActiveCfg = Release|Any CPU
+		{444EEDC3-0D34-4F2E-9417-165DA4ABD82F}.Release|x86.Build.0 = Release|Any CPU
+		{8FB5758C-2388-45C5-877D-708155C07CA9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8FB5758C-2388-45C5-877D-708155C07CA9}.Debug|x86.Build.0 = Debug|Any CPU
+		{8FB5758C-2388-45C5-877D-708155C07CA9}.Release|x86.ActiveCfg = Release|Any CPU
+		{8FB5758C-2388-45C5-877D-708155C07CA9}.Release|x86.Build.0 = Release|Any CPU
+		{C2CF81B8-149D-4BAC-A26F-C84DBB3F1AE2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C2CF81B8-149D-4BAC-A26F-C84DBB3F1AE2}.Debug|x86.Build.0 = Debug|Any CPU
+		{C2CF81B8-149D-4BAC-A26F-C84DBB3F1AE2}.Release|x86.ActiveCfg = Release|Any CPU
+		{C2CF81B8-149D-4BAC-A26F-C84DBB3F1AE2}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {79C45D86-052A-4C01-A861-4409712A49B5}
+	EndGlobalSection
+EndGlobal

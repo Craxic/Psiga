@@ -6,6 +6,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using PsigaPkgLib.Entries;
+using K4os.Compression;
 
 namespace PsigaPkgLib
 {
@@ -18,9 +19,11 @@ namespace PsigaPkgLib
 		
 		private const int CHUNK_SIZE = 0x2000000;
 		private const int COMP_BUFFER_SIZE = 0x2000000;
-		private const int COMPRESSION_FLAG = 0x40000000;
+		private const int LZF_COMPRESSION_FLAG = 0x40000000;
+		private const int LZ4_COMPRESSION_FLAG = 0x20000000;
 		private const int PACKAGE_VERSION_CODE_TRANSISTOR_PYRE = 5;
 		private const int PACKAGE_VERSION_CODE_HADES = 6;
+		private const int PACKAGE_VERSION_CODE_HADES_NEW = 7;
 
 		private const string ERR_COMPRESSED_MANIFEST = "Compressed manifests are not allowed (in file {0})";
 		private const string ERR_PACKAGE_VERSION = "Package version {0} is not supported (in file {1})";
@@ -171,13 +174,14 @@ namespace PsigaPkgLib
 				// Read the header of the manifest
 				int manifestHeader = fs.ReadInt32BE();
 				int manifestLength = readBuffer.Length - 4;
-				if ((manifestHeader & COMPRESSION_FLAG) != 0) {
+				if ((manifestHeader & LZF_COMPRESSION_FLAG) != 0) {
 					throw new PackageReadException(string.Format(ERR_COMPRESSED_MANIFEST, manifestFile));
 				}
 
 				int manifestVersion = manifestHeader;
 				if (manifestVersion != PACKAGE_VERSION_CODE_TRANSISTOR_PYRE
-				    && manifestVersion != PACKAGE_VERSION_CODE_HADES) {
+				    && manifestVersion != PACKAGE_VERSION_CODE_HADES
+					&& manifestVersion != PACKAGE_VERSION_CODE_HADES_NEW) {
 					throw new PackageReadException(string.Format(ERR_PACKAGE_VERSION, manifestHeader, manifestFile));
 				}
 
@@ -301,7 +305,7 @@ namespace PsigaPkgLib
 			using (MemoryStream ms = new MemoryStream(chunks.Count * CHUNK_SIZE)) {
 				int headerCode = PACKAGE_VERSION_CODE_TRANSISTOR_PYRE;
 				if (compressed) {
-					headerCode |= COMPRESSION_FLAG;
+					headerCode |= LZF_COMPRESSION_FLAG;
 				}
 				ms.WriteInt32BE(headerCode);
 
@@ -385,18 +389,26 @@ namespace PsigaPkgLib
 				var readBuffer = new byte[CHUNK_SIZE];
 
 				byte[] compressionBuffer = null;
-				bool isCompressed = false;
+				bool isLZFCompressed = false;
+				bool isLZ4Compressed = false;
 
 				// Read the header of the package
 				int packageHeader = fs.ReadInt32BE();
 				int packageLength = readBuffer.Length - 4;
-				if ((packageHeader & COMPRESSION_FLAG) != 0) {
-					packageHeader &= ~COMPRESSION_FLAG;
-					isCompressed = true;
+				if ((packageHeader & LZF_COMPRESSION_FLAG) != 0) {
+					packageHeader &= ~LZF_COMPRESSION_FLAG;
+					isLZFCompressed = true;
+					compressionBuffer = new byte[COMP_BUFFER_SIZE];
+				}
+				else if ((packageHeader & LZ4_COMPRESSION_FLAG) != 0)
+				{
+					packageHeader &= ~LZ4_COMPRESSION_FLAG;
+					isLZ4Compressed = true;
 					compressionBuffer = new byte[COMP_BUFFER_SIZE];
 				}
 				if (packageHeader != PACKAGE_VERSION_CODE_TRANSISTOR_PYRE
-					&& packageHeader != PACKAGE_VERSION_CODE_HADES) {
+					&& packageHeader != PACKAGE_VERSION_CODE_HADES
+					&& packageHeader != PACKAGE_VERSION_CODE_HADES_NEW) {
 					throw new PackageReadException(string.Format(ERR_PACKAGE_VERSION, packageHeader, dataFile));
 				}
 
@@ -407,11 +419,18 @@ namespace PsigaPkgLib
 				{
 					float from = fs.Position / (float) fs.Length;
 					int chunkSize;
-					if (isCompressed && fs.ReadByte() != 0) {
+					if (isLZFCompressed && fs.ReadByte() != 0) {
 						int num2 = fs.ReadInt32BE();
 						fs.Read(compressionBuffer, 0, num2);
 						chunkSize = decompressor.Decompress(compressionBuffer, num2, readBuffer, readBuffer.Length);
-					} else {
+					} 
+					else if (isLZ4Compressed && fs.ReadByte() != 0)
+					{
+						int num3 = fs.ReadInt32BE();
+						fs.Read(compressionBuffer, 0, num3);
+						chunkSize = K4os.Compression.LZ4.LZ4Codec.Decode(compressionBuffer, 0, num3, readBuffer, 0, readBuffer.Length);
+					}
+					else {
 						chunkSize = fs.Read(readBuffer, 0, packageLength);
 					}
 					float to = fs.Position / (float) fs.Length;

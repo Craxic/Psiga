@@ -4,9 +4,9 @@
     <ProjectView>ShowAllFiles</ProjectView>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <StartWorkingDirectory>E:\Pyre\PSIGA\Psiga\Psiga\</StartWorkingDirectory>
+    <StartWorkingDirectory>..\..</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <StartWorkingDirectory>E:\Pyre\PSIGA\Psiga\Psiga\</StartWorkingDirectory>
+    <StartWorkingDirectory>..\..</StartWorkingDirectory>
   </PropertyGroup>
 </Project>
