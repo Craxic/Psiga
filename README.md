@@ -1,7 +1,7 @@
 # Psiga
 Transistor/Hades Package Tools
 
-This fork of Psiga has experimental changes to support the new Hades version 7 packages. This isn't the original repo and I am not the original creator of this tool.
+This fork of Psiga has experimental changes to support the new Hades version 7 packages. Original README content below.
 
 ---
 
